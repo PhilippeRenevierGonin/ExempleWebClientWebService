@@ -7,8 +7,7 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
-import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
-import static org.springframework.web.reactive.function.server.RequestPredicates.accept;
+import static org.springframework.web.reactive.function.server.RequestPredicates.*;
 
 @Configuration(proxyBeanMethods = false)
 public class EncryptedMessageRouter {
@@ -19,7 +18,8 @@ public class EncryptedMessageRouter {
 		return RouterFunctions
 			.route(GET("/hello").and(accept(MediaType.APPLICATION_JSON)), encryptedMessageHandler::hello)
 				.andRoute(GET("/cesar/{key:[0-9]|1[0-9]|2[0-6]}").and(accept(MediaType.APPLICATION_JSON)), encryptedMessageHandler::cesar)
-				.andRoute(GET("/allcesar/").and(accept(MediaType.APPLICATION_JSON)), encryptedMessageHandler::allCesar);
+				.andRoute(GET("/allcesar/").and(accept(MediaType.APPLICATION_JSON)), encryptedMessageHandler::allCesar)
+				.andRoute(POST("/allcesarpost/").and(accept(MediaType.APPLICATION_JSON)), encryptedMessageHandler::allCesarPost);
 
 	}
 }

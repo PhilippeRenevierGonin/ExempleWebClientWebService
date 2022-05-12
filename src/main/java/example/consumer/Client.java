@@ -53,9 +53,14 @@ public class Client {
 
 			requeteFluxPostUnObj(client);
 
+			System.out.println("************************** une Flux / POST (obj) Functional endpoint **************************************");
+
+			requeteFluxPostFunctional(client);
+
+
 
 			System.out.println("************************** une sortie pour montrer l'entrelacement **************************************");
-			for(int i = 100; i < 120; i++ ) {
+			for(int i = 100; i < 150; i++ ) {
 					System.out.println("thread principal " + i +" sur le thread : "+Thread.currentThread().getName());
 					TimeUnit.NANOSECONDS.sleep(1);
 
@@ -67,6 +72,35 @@ public class Client {
 			client.fin();
 			System.out.println("-------------------------- fini --------------------------");
 		};
+	}
+
+	private void requeteFluxPostFunctional(EncryptedMessageConsumer client) throws URISyntaxException {
+		Flux<Message> toutesSDemandées4 = client.getAllCesarPostObjFunc(new Message("fini avec une requete fonctionnelle"));
+		toutesSDemandées4.subscribe( new Subscriber<Message>() {
+			@Override
+			public void onSubscribe(Subscription subscription) {
+				System.out.println("début de souscription 4"+" sur le thread : "+Thread.currentThread().getName());
+				subscription.request(30); // nb element
+			}
+
+			@Override
+			public void onNext(Message g) {
+				System.out.println("on a reçu de la souscription 4 "+g.getMessage()+" sur le thread : "+Thread.currentThread().getName());
+
+			}
+
+			@Override
+			public void onError(Throwable throwable) {
+				System.out.println("début de onError 4"+" sur le thread : "+Thread.currentThread().getName());
+				throwable.printStackTrace();
+			}
+
+			@Override
+			public void onComplete() {
+				System.out.println("fin de souscription 4 "+" sur le thread : "+Thread.currentThread().getName());
+
+			}
+		});
 	}
 
 	private void requeteFluxPostUnObj(EncryptedMessageConsumer client) throws URISyntaxException {

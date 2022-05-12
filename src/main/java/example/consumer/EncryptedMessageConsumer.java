@@ -61,4 +61,11 @@ public class EncryptedMessageConsumer {
 				.retrieve()
 				.bodyToMono(Void.class).block();
 	}
+
+	public Flux<Message> getAllCesarPostObjFunc(Message m) throws URISyntaxException {
+		return this.client.post().uri(new URI("http://localhost:8080/allcesarpost/"))
+				.accept(MediaType.APPLICATION_JSON)
+				.body(Mono.just(m), Message.class).retrieve()
+				.bodyToFlux(Message.class);
+	}
 }

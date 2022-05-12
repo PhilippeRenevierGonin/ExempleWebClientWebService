@@ -5,11 +5,14 @@ import example.webservice.features.Cesar;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.BodyExtractors;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
 import reactor.core.publisher.Mono;
+
+import java.util.function.Consumer;
 
 @Component
 public class EncryptedMessageHandler {
@@ -38,6 +41,8 @@ public class EncryptedMessageHandler {
 	}
 
 
-
-
+	public Mono<ServerResponse> allCesarPost(ServerRequest serverRequest) {
+		Mono<Message> param = serverRequest.bodyToMono(Message.class) ; // on n'a pas le droit de faire block ici
+		return param.flatMap(msg -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(BodyInserters.fromValue(crypt.generateAllCesar(msg.getMessage()))));
+	}
 }
