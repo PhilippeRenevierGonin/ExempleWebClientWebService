@@ -64,6 +64,7 @@ public class Client {
 
 			System.out.println("************************** petite tempo pour laisser le temps de finir **************************************");
 			TimeUnit.SECONDS.sleep(2);
+			client.fin();
 			System.out.println("-------------------------- fini --------------------------");
 		};
 	}

@@ -39,11 +39,7 @@ public class EncryptedMessageConsumer {
 				.bodyToFlux(Message.class);
 	}
 
-	//@todo : requete en post...
 	public Flux<Message> getAllCesarPost(String s) throws URISyntaxException {
-		System.out.println("getAllCesarPost");
-
-
 		return this.client.post().uri(new URI("http://localhost:8080/allcesar2post/"))
 				.accept(MediaType.APPLICATION_JSON)
 				.body(Mono.just(s), String.class).retrieve()
@@ -52,12 +48,17 @@ public class EncryptedMessageConsumer {
 
 
 	public Flux<Message> getAllCesarPostObj(Message s) throws URISyntaxException {
-		System.out.println("getAllCesarPost");
-
-
 		return this.client.post().uri(new URI("http://localhost:8080/allcesar2postobj/"))
 				.accept(MediaType.APPLICATION_JSON)
 				.body(Mono.just(s), Message.class).retrieve()
 				.bodyToFlux(Message.class);
+	}
+
+
+	public void fin() {
+		this.client.get().uri("/fin2")
+				.accept(MediaType.APPLICATION_JSON)
+				.retrieve()
+				.bodyToMono(Void.class).block();
 	}
 }

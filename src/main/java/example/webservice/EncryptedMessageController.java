@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 public class EncryptedMessageController {
@@ -52,6 +53,24 @@ public class EncryptedMessageController {
             toCode = val.getMessage().toLowerCase();
         }
         return cesar.generateAllCesar(toCode);
+    }
+
+
+    @GetMapping("/fin2")
+    public void finir() {
+        System.out.println("fin du serveur sur demande, pour travis...");
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    TimeUnit.MILLISECONDS.sleep(1);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                System.exit(0);
+            }
+        });
+        t.start();
     }
 
 
