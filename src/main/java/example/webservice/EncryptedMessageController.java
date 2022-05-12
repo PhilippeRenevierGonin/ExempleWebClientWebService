@@ -3,10 +3,7 @@ package example.webservice;
 import example.data.Message;
 import example.webservice.features.Cesar;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 
@@ -36,8 +33,26 @@ public class EncryptedMessageController {
         if ((val != null) && (! val.equals(""))) {
             toCode = val.toLowerCase();
         }
-
         return cesar.generateAllCesar(toCode);
     }
+
+    @PostMapping("/allcesar2post")
+    public ArrayList<Message> allCesarpost(@RequestBody String val) {
+        String toCode = "no string";
+        if ((val != null) && (! val.equals(""))) {
+            toCode = val.toLowerCase();
+        }
+        return cesar.generateAllCesar(toCode);
+    }
+
+    @PostMapping("/allcesar2postobj")
+    public ArrayList<Message> allCesarpostobj(@RequestBody Message val) {
+        String toCode = "no string";
+        if ((val != null) && (! val.equals(""))) {
+            toCode = val.getMessage().toLowerCase();
+        }
+        return cesar.generateAllCesar(toCode);
+    }
+
 
 }
