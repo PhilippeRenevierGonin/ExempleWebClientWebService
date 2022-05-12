@@ -8,6 +8,8 @@ install:
 
 script:
   - mvn exec:java@serveur &
+  - echo "le premier build n'est pas passer car le serveur n'avait pas eu le temps de se lancer..., attente de quelques secondes pour laisser le temps de démarrer"
+  - sleep 5
   - mvn exec:java@client -Dexec.cleanupDaemonThreads=false
   - echo "fin violente"
   - kill -9 -1
