@@ -5,10 +5,11 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 
+/**
+ * le composant qui implémente le code cesar
+ */
 @Component
 public class Cesar {
-
-
     // a-z sont traités...
     public String encodeCesar(String toCode, int decalage) {
         if ((decalage < 0) || (decalage > 26)) return toCode;

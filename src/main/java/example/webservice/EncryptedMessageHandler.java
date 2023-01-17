@@ -14,6 +14,9 @@ import reactor.core.publisher.Mono;
 
 import java.util.function.Consumer;
 
+/**
+ * Le compossant "handler" qui propose 5 méthodes pour 5 traitements de requêtes
+ */
 @Component
 public class EncryptedMessageHandler {
 
@@ -42,6 +45,11 @@ public class EncryptedMessageHandler {
 
 
 	public Mono<ServerResponse> allCesarPost(ServerRequest serverRequest) {
+		Mono<String> param = serverRequest.bodyToMono(String.class) ; // on n'a pas le droit de faire block ici
+		return param.flatMap(msg -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(BodyInserters.fromValue(crypt.generateAllCesar(msg))));
+	}
+
+	public Mono<ServerResponse> allCesarPostObj(ServerRequest serverRequest) {
 		Mono<Message> param = serverRequest.bodyToMono(Message.class) ; // on n'a pas le droit de faire block ici
 		return param.flatMap(msg -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(BodyInserters.fromValue(crypt.generateAllCesar(msg.getMessage()))));
 	}

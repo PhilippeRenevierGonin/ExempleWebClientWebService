@@ -1,5 +1,7 @@
 package example.consumer;
 
+import example.consumer.modularity.ServiceConsumer;
+import example.consumer.modularity.NetworkExchange;
 import example.data.Message;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -9,6 +11,7 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -26,41 +29,85 @@ public class Client {
 				.run(args);
 	}
 
+
+	/**
+	 * Pour illuster le passage de paramètres, le code n'est pas séparé, c'est fortement couplé à la technologie utilisée. Les requêtes sont synchrones.
+	 * @param requestMaker : pour faire effectivement les requetes.
+	 * @return  le bean d'exécution
+	 */
 	@Bean
-	public CommandLineRunner plusieursRequetes(@Autowired EncryptedMessageConsumer client) {
+	public CommandLineRunner callWithParameters(@Autowired RequestMaker requestMaker) {
 		return args -> {
+			StringBuilder s = new StringBuilder("********* requetes avec param *********\n");
+			s.append("\n"+requestMaker.getMessageKey("message special", 4).block().getMessage());
+			s.append("\n"+requestMaker.getMessageKeyPost("abcde fghij", 5).block().getMessage());
+			s.append("\n********* fin requetes avec param *********\n");
+			System.out.println(s);
+		};
+	}
+
+
+
+	/**
+	 * exemple avec la séparation en trois parties
+	 * @param principal : la partie qui déclenche l'appel au webservice, qui en a besoin
+	 * @param requetes : l'encapsulation des requetes, pour les masquer à "principal". Cette partie a une dépendance à RequestMaker
+	 * @return le bean d'exécution
+	 */
+	@Bean
+	public CommandLineRunner threeClassesSeparation(@Autowired ServiceConsumer principal, @Autowired NetworkExchange requetes) {
+		return args -> {
+			principal.setNetworkExchange(requetes);
+			principal.consume();
+		};
+	}
+
+
+	/**
+	 * pour montrer le block (au début), puis fait des requêtes get, puis post, avec pas de paramètre, des paramètres String, puis des paramètres objet
+	 * puis aussi avec des Flux. Le code n'est pas séparé, c'est fortement couplé à la technologie utilisée
+	 * @param requestMaker : pour faire effectivement les requetes.
+	 * @param builder : parametre inutile, juste pour montrer qu'on pourrait le récupérer ici
+	 * @return le bean qui va faire plusieurs appels
+	 */
+	@Bean
+	public CommandLineRunner severalRequests(@Autowired RequestMaker requestMaker, @Autowired WebClient.Builder builder) {
+		return args -> {
+			System.out.println("le builder ne sert pas ici, mais il aurait pu : "+builder);
+
 			System.out.println("************************** requetes **************************************");
 			System.out.println("************************** une bloquante / GET **************************************");
 			
-			String s = client.getMessage().block();
+			String s = requestMaker.getMessage("/hello").block();
+			s = s+"\n"+requestMaker.getMessage("/hello2").block();
 			System.out.println(s+" sur le thread : "+Thread.currentThread().getName());
 				for(int i = 0; i < 20; System.out.println(i++) );
 
 			System.out.println("************************** une Mono / GET **************************************");
-			requeteMonoGet(client);
+			requeteMonoGet(requestMaker, "/hello");
+			requeteMonoGet(requestMaker, "/hello2");
 
 			System.out.println("************************** une Flux / GET **************************************");
 
-			requeteFluxGet(client);
+			requeteFluxGet(requestMaker, "/allcesar", "hello");
+			requeteFluxGet(requestMaker, "/allcesar2", "bonjour");
 
 
 			System.out.println("************************** une Flux / POST (string) **************************************");
 
-			requeteFluxPost(client);
+			requeteFluxPost(requestMaker, "allcesarpost", "bye");
+			requeteFluxPost(requestMaker, "allcesar2post", "eau");
 
 
 			System.out.println("************************** une Flux / POST (obj) **************************************");
 
-			requeteFluxPostUnObj(client);
-
-			System.out.println("************************** une Flux / POST (obj) Functional endpoint **************************************");
-
-			requeteFluxPostFunctional(client);
+			requeteFluxPostUnObj(requestMaker, "allcesar2postobj", new Message("fini - webcontroller"));
+			requeteFluxPostUnObj(requestMaker, "allcesar2postobj", new Message("fini - router / handler"));
 
 
 
 			System.out.println("************************** une sortie pour montrer l'entrelacement **************************************");
-			for(int i = 100; i < 150; i++ ) {
+			for(int i = 20; i < 100; i++ ) {
 					System.out.println("thread principal " + i +" sur le thread : "+Thread.currentThread().getName());
 					TimeUnit.NANOSECONDS.sleep(1);
 
@@ -68,43 +115,17 @@ public class Client {
 
 
 			System.out.println("************************** petite tempo pour laisser le temps de finir **************************************");
-			TimeUnit.SECONDS.sleep(2);
-			client.fin();
+			TimeUnit.SECONDS.sleep(5);
+			requestMaker.fin();
 			System.out.println("-------------------------- fini --------------------------");
 		};
 	}
 
-	private void requeteFluxPostFunctional(EncryptedMessageConsumer client) throws URISyntaxException {
-		Flux<Message> toutesSDemandées4 = client.getAllCesarPostObjFunc(new Message("fini avec une requete fonctionnelle"));
-		toutesSDemandées4.subscribe( new Subscriber<Message>() {
-			@Override
-			public void onSubscribe(Subscription subscription) {
-				System.out.println("début de souscription 4"+" sur le thread : "+Thread.currentThread().getName());
-				subscription.request(30); // nb element
-			}
 
-			@Override
-			public void onNext(Message g) {
-				System.out.println("on a reçu de la souscription 4 "+g.getMessage()+" sur le thread : "+Thread.currentThread().getName());
 
-			}
 
-			@Override
-			public void onError(Throwable throwable) {
-				System.out.println("début de onError 4"+" sur le thread : "+Thread.currentThread().getName());
-				throwable.printStackTrace();
-			}
-
-			@Override
-			public void onComplete() {
-				System.out.println("fin de souscription 4 "+" sur le thread : "+Thread.currentThread().getName());
-
-			}
-		});
-	}
-
-	private void requeteFluxPostUnObj(EncryptedMessageConsumer client) throws URISyntaxException {
-		Flux<Message> toutesSDemandées3 = client.getAllCesarPostObj(new Message("fini"));
+	private void requeteFluxPostUnObj(RequestMaker client, String url, Message message) throws URISyntaxException {
+		Flux<Message> toutesSDemandées3 = client.getAllCesarPostObj(url, message);
 		toutesSDemandées3.subscribe( new Subscriber<Message>() {
 			@Override
 			public void onSubscribe(Subscription subscription) {
@@ -133,8 +154,8 @@ public class Client {
 	}
 
 
-	private void requeteFluxPost(EncryptedMessageConsumer client) throws URISyntaxException {
-		Flux<Message> toutesSDemandées2 = client.getAllCesarPost("bye");
+	private void requeteFluxPost(RequestMaker client, String url, String toBeCrypted) throws URISyntaxException {
+		Flux<Message> toutesSDemandées2 = client.getAllCesarPost(url, toBeCrypted);
 		toutesSDemandées2.subscribe( new Subscriber<Message>() {
 			@Override
 			public void onSubscribe(Subscription subscription) {
@@ -162,8 +183,8 @@ public class Client {
 		});
 	}
 
-	private void requeteFluxGet(EncryptedMessageConsumer client) {
-		Flux<Message> toutesSDemandées = client.getAllCesar("hello");
+	private void requeteFluxGet(RequestMaker client, String url, String toBeCrypted) {
+		Flux<Message> toutesSDemandées = client.getAllCesar(url, toBeCrypted);
 		toutesSDemandées.subscribe( new Subscriber<Message>() {
 			@Override
 			public void onSubscribe(Subscription subscription) {
@@ -175,7 +196,6 @@ public class Client {
 			@Override
 			public void onNext(Message g) {
 				System.out.println("on a reçu de la souscription 1 "+g.getMessage()+" sur le thread : "+Thread.currentThread().getName());
-
 			}
 
 			@Override
@@ -191,8 +211,8 @@ public class Client {
 		});
 	}
 
-	private void requeteMonoGet(EncryptedMessageConsumer client) {
-		Mono<String> sDemandée = client.getMessage();
+	private void requeteMonoGet(RequestMaker client, String url) {
+		Mono<String> sDemandée = client.getMessage(url);
 		sDemandée.subscribe(new Consumer<String>() {
 					@Override
 					public void accept(String s) {

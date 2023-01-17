@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * le restcontroller, avec 5 mapping, pour les 5 chemins exposés
+ */
 @RestController
 public class EncryptedMessageController {
     @Autowired
@@ -28,6 +31,9 @@ public class EncryptedMessageController {
         return new Message(cesar.encodeCesar(toCode, key));
     }
 
+
+
+
     @GetMapping("/allcesar2")
     public ArrayList<Message> allCesar(@RequestParam(required = false) String val) {
         String toCode = "no string";
@@ -41,7 +47,7 @@ public class EncryptedMessageController {
     public ArrayList<Message> allCesarpost(@RequestBody String val) {
         String toCode = "no string";
         if ((val != null) && (! val.equals(""))) {
-            toCode = val.toLowerCase();
+            toCode = val.trim().toLowerCase();
         }
         return cesar.generateAllCesar(toCode);
     }
