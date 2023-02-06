@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * le restcontroller, avec 5 mapping, pour les 5 chemins exposés
  */
+@CrossOrigin
 @RestController
 public class EncryptedMessageController {
     @Autowired
@@ -24,6 +25,7 @@ public class EncryptedMessageController {
 
     @GetMapping("/cesar2/{key:[0-9]|1[0-9]|2[0-6]}")
     public Message cesar(@RequestParam(required = false) String val, @PathVariable("key") int key) {
+        System.out.println("@GetMapping(\"/cesar2/{key:[0-9]|1[0-9]|2[0-6]}\"");
         String toCode = "no string";
         if ((val != null) && (! val.equals(""))) {
             toCode = val.toLowerCase();
