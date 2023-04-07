@@ -14,9 +14,9 @@ import reactor.core.publisher.Mono;
     }
 
     public void getRequestHello() {
-        Mono<String> sDemandée = requestMaker.getMessage("/hello");
+        Mono<String> sDemandee = requestMaker.getMessage("/hello");
         System.out.println("Listener dans le tryptique MainCode / Echange / RequestMaker");
-        sDemandée.subscribe(new java.util.function.Consumer<String>() {
+        sDemandee.subscribe(new java.util.function.Consumer<String>() {
             @Override
             public void accept(String s) {
                 consumer.newAnswer(s);

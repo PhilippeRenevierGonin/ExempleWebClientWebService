@@ -125,8 +125,8 @@ public class Client {
 
 
 	private void requeteFluxPostUnObj(RequestMaker client, String url, Message message) throws URISyntaxException {
-		Flux<Message> toutesSDemandées3 = client.getAllCesarPostObj(url, message);
-		toutesSDemandées3.subscribe( new Subscriber<Message>() {
+		Flux<Message> toutesSDemandees3 = client.getAllCesarPostObj(url, message);
+		toutesSDemandees3.subscribe( new Subscriber<Message>() {
 			@Override
 			public void onSubscribe(Subscription subscription) {
 				System.out.println("début de souscription 3"+" sur le thread : "+Thread.currentThread().getName());
@@ -155,12 +155,15 @@ public class Client {
 
 
 	private void requeteFluxPost(RequestMaker client, String url, String toBeCrypted) throws URISyntaxException {
-		Flux<Message> toutesSDemandées2 = client.getAllCesarPost(url, toBeCrypted);
-		toutesSDemandées2.subscribe( new Subscriber<Message>() {
+		Flux<Message> toutesSDemandees2 = client.getAllCesarPost(url, toBeCrypted);
+		toutesSDemandees2.subscribe( new Subscriber<Message>() {
 			@Override
 			public void onSubscribe(Subscription subscription) {
 				System.out.println("début de souscription 2"+" sur le thread : "+Thread.currentThread().getName());
-				subscription.request(30); // nb element
+				// subscription.request(30); // nb element
+				long count = toutesSDemandees2.count().block();
+				System.out.println("début de souscription 2"+" sur le thread : "+Thread.currentThread().getName()+" count = "+count);
+				subscription.request(count);
 			}
 
 			@Override
@@ -184,8 +187,8 @@ public class Client {
 	}
 
 	private void requeteFluxGet(RequestMaker client, String url, String toBeCrypted) {
-		Flux<Message> toutesSDemandées = client.getAllCesar(url, toBeCrypted);
-		toutesSDemandées.subscribe( new Subscriber<Message>() {
+		Flux<Message> toutesSDemandees = client.getAllCesar(url, toBeCrypted);
+		toutesSDemandees.subscribe( new Subscriber<Message>() {
 			@Override
 			public void onSubscribe(Subscription subscription) {
 				System.out.println("début de souscription 1"+" sur le thread : "+Thread.currentThread().getName());
@@ -212,8 +215,8 @@ public class Client {
 	}
 
 	private void requeteMonoGet(RequestMaker client, String url) {
-		Mono<String> sDemandée = client.getMessage(url);
-		sDemandée.subscribe(new Consumer<String>() {
+		Mono<String> sDemandee = client.getMessage(url);
+		sDemandee.subscribe(new Consumer<String>() {
 					@Override
 					public void accept(String s) {
 						System.out.println("on a accepté " + s+" sur le thread : "+Thread.currentThread().getName());

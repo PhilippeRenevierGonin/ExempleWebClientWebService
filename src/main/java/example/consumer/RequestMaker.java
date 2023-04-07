@@ -62,7 +62,10 @@ public class RequestMaker {
 	}
 
 	public Mono<Message> getMessageKey(String messageSpecial, int i) {
-		return this.webClient.get().uri("/cesar3key", uri -> uri.queryParam("val",messageSpecial).queryParam("key",i).build()).accept(MediaType.APPLICATION_JSON)
+		return this.webClient.get()
+				.uri("/cesar3key",
+						uri -> uri.queryParam("val",messageSpecial)
+								.queryParam("key",i).build())
 				.retrieve()
 				.bodyToMono(Message.class);
 	}
@@ -75,13 +78,5 @@ public class RequestMaker {
 				.bodyToMono(Message.class);
 	}
 
-	/*
 
-	public Flux<Message> getAllCesarPostObjFunc(Message m) throws URISyntaxException {
-		return this.client.post().uri(new URI("http://localhost:8080/allcesarpostobj/"))
-				.accept(MediaType.APPLICATION_JSON)
-				.body(Mono.just(m), Message.class).retrieve()
-				.bodyToFlux(Message.class);
-	}
-	 */
 }
