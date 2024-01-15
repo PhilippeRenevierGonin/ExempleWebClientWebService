@@ -22,6 +22,8 @@ import java.util.function.Consumer;
 @SpringBootApplication
 public class Client {
 
+	private int nbBeansFinis = 0;
+
 	public static void main(String[] args) {
 		// SpringApplication.run(Client.class, args);
 		new SpringApplicationBuilder(Client.class)
@@ -43,6 +45,8 @@ public class Client {
 			s.append("\n"+requestMaker.getMessageKeyPost("abcde fghij", 5).block().getMessage());
 			s.append("\n********* fin requetes avec param *********\n");
 			System.out.println(s);
+
+			fin(requestMaker);
 		};
 	}
 
@@ -59,6 +63,8 @@ public class Client {
 		return args -> {
 			principal.setNetworkExchange(requetes);
 			principal.consume();
+
+			requetes.fin(this);
 		};
 	}
 
@@ -113,15 +119,26 @@ public class Client {
 
 				}
 
+			fin(requestMaker);
 
-			System.out.println("************************** petite tempo pour laisser le temps de finir **************************************");
-			TimeUnit.SECONDS.sleep(5);
-			requestMaker.fin();
-			System.out.println("-------------------------- fini --------------------------");
 		};
 	}
 
 
+	public synchronized void fin(RequestMaker requestMaker) {
+		nbBeansFinis++;
+		if (nbBeansFinis >= 3) {
+			System.out.println("************************** petite tempo pour laisser le temps de finir **************************************");
+            try {
+                TimeUnit.SECONDS.sleep(5);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            requestMaker.fin();
+			System.out.println("-------------------------- fini --------------------------");
+		}
+
+	}
 
 
 	private void requeteFluxPostUnObj(RequestMaker client, String url, Message message) throws URISyntaxException {

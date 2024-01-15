@@ -1,5 +1,6 @@
 package example.consumer.modularity;
 
+import example.consumer.Client;
 import example.consumer.RequestMaker;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -27,5 +28,10 @@ import reactor.core.publisher.Mono;
     @Override
     public void setConsumer(ServiceConsumer consumer) {
         this.consumer = consumer;
+    }
+
+    @Override
+    public void fin(Client client) {
+        client.fin(requestMaker);
     }
 }
